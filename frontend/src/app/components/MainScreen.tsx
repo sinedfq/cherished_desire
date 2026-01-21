@@ -23,7 +23,7 @@ export function MainScreen({ onNavigate, isLoggedIn }: MainScreenProps) {
       <div className="relative z-10 w-full max-w-6xl mx-auto flex flex-col items-center">
         {/* Title at top for mobile, bottom for desktop */}
         <h1 className="text-4xl md:text-5xl font-bold mb-4 text-gray-800 tracking-wide md:order-2 md:mt-12">
-          ДРИМИ
+          ЗАВЕТНОЕ ЖЕЛАНИЕ
         </h1>
         
         <p className="text-gray-500 text-lg md:text-xl text-center mb-8 md:mb-12 md:order-3">
