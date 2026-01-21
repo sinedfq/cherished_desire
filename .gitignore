@@ -206,15 +206,7 @@ marimo/_static/
 marimo/_lsp/
 __marimo__/
 
-Поскольку проект сейчас содержит **React + TypeScript** (в папке `frontend`), а `.gitignore` был автоматически создан для Python-проекта — его нужно **заместить** на подходящий для фронтенд-разработки.
 
-Вот оптимальный `.gitignore` для React + TypeScript проекта (с учётом Vite, так как у вас есть `vite.config.ts`):
-
----
-
-### ✅ Рекомендуемый `.gitignore` для React + TypeScript + Vite
-
-```gitignore
 # Logs
 logs
 logs/*.log
