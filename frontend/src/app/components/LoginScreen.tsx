@@ -33,7 +33,7 @@ export function LoginScreen({ onBack, onLogin, onSwitchToRegister }: LoginScreen
 
         {/* Logo */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-3">ДРИМИ</h1>
+          <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-3">ЗАВЕТНОЕ ЖЕЛАНИЕ</h1>
           <p className="text-gray-500 text-lg">Войдите, чтобы продолжить</p>
         </div>
 
