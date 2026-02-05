@@ -3,13 +3,12 @@ export type UserRole = 'загадывающий' | 'исполнитель' | '
 export type WishStatus = 'moderation' | 'published' | 'rejected' | 'fulfilled';
 
 export interface User {
-  id: string;
+  id: number;
   name: string;
   email: string;
-  role: UserRole;
-  avatar?: string;
-  wishesCreated: number;
-  wishesFulfilled: number;
+  role?: string;
+  wishesCreated?: number;
+  wishesFulfilled?: number;
 }
 
 export interface Wish {

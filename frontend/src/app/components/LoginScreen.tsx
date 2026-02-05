@@ -1,20 +1,29 @@
+// LoginScreen.tsx
 import { useState } from 'react';
 import { StarBackground } from './StarBackground';
 import { Mail, Lock, ArrowLeft } from 'lucide-react';
+import { Screen } from '../App';
 
 interface LoginScreenProps {
   onBack: () => void;
-  onLogin: (email: string, password: string) => void;
   onSwitchToRegister: () => void;
+  onLogin: (email: string, password: string) => Promise<void>;
 }
 
-export function LoginScreen({ onBack, onLogin, onSwitchToRegister }: LoginScreenProps) {
+export function LoginScreen({ onBack, onSwitchToRegister, onLogin }: LoginScreenProps) {
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onLogin(email, password);
+    try {
+      await onLogin(email, password);
+    } catch (error) {
+      console.error('Login failed:', error);
+      alert('Неверный email или пароль');
+    }
   };
 
   return (

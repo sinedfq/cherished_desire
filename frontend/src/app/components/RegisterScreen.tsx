@@ -1,29 +1,37 @@
 import { useState } from 'react';
 import { StarBackground } from './StarBackground';
 import { Mail, Lock, User as UserIcon, ArrowLeft, Phone } from 'lucide-react';
-import { UserRole } from '../types';
 
 interface RegisterScreenProps {
   onBack: () => void;
-  onRegister: (name: string, email: string, phone: string, password: string, role: UserRole) => void;
+  onRegister: (email: string, password: string, name: string, phone: string) => void;
   onSwitchToLogin: () => void;
 }
 
 export function RegisterScreen({ onBack, onRegister, onSwitchToLogin }: RegisterScreenProps) {
+
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [role, setRole] = useState<UserRole>('загадывающий');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Проверка подтверждения пароля
     if (password !== confirmPassword) {
       alert('Пароли не совпадают');
       return;
     }
-    onRegister(name, email, phone, password, role);
+
+    try {
+      // Вызываем регистрацию напрямую
+      await onRegister(email, password, name, phone);
+    } catch (error) {
+      console.error('Registration failed:', error);
+      alert('Ошибка регистрации: ' + (error instanceof Error ? error.message : 'Неизвестная ошибка'));
+    }
   };
 
   return (
@@ -95,37 +103,6 @@ export function RegisterScreen({ onBack, onRegister, onSwitchToLogin }: Register
               />
             </div>
           </div>
-
-          {/* Role selection */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700">Я хочу</label>
-            <div className="grid grid-cols-2 gap-3">
-              <button
-                type="button"
-                onClick={() => setRole('загадывающий')}
-                className={`py-3 px-4 rounded-2xl border-2 transition-all ${
-                  role === 'загадывающий'
-                    ? 'border-blue-400 bg-blue-50 text-blue-700'
-                    : 'border-gray-200 text-gray-600 hover:border-gray-300'
-                }`}
-              >
-                Загадать
-              </button>
-              <button
-                type="button"
-                onClick={() => setRole('исполнитель')}
-                className={`py-3 px-4 rounded-2xl border-2 transition-all ${
-                  role === 'исполнитель'
-                    ? 'border-green-400 bg-green-50 text-green-700'
-                    : 'border-gray-200 text-gray-600 hover:border-gray-300'
-                }`}
-              >
-                Исполнить
-              </button>
-            </div>
-          </div>
-
-          {/* Password */}
           <div className="space-y-2">
             <label className="text-sm font-medium text-gray-700">Пароль</label>
             <div className="relative">

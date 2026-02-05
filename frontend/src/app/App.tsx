@@ -1,4 +1,5 @@
-import { useState } from 'react';
+// App.tsx
+import { useState, useEffect } from 'react';
 import { MainScreen } from './components/MainScreen';
 import { LoginScreen } from './components/LoginScreen';
 import { RegisterScreen } from './components/RegisterScreen';
@@ -12,9 +13,10 @@ import { ModerationPanel } from './components/ModerationPanel';
 import { TrustAndSafety } from './components/TrustAndSafety';
 import { FulfilledGallery } from './components/FulfilledGallery';
 import { User, Wish, UserRole, WishStatus } from './types';
-import { mockWishes, mockUsers } from './data/mockData';
+import { mockWishes } from './data/mockData';
+import useAuth from '../hooks/useAuth'
 
-type Screen =
+export type Screen =
   | 'main'
   | 'login'
   | 'register'
@@ -30,53 +32,66 @@ type Screen =
 
 export default function App() {
   const [currentScreen, setCurrentScreen] = useState<Screen>('main');
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [wishes, setWishes] = useState<Wish[]>(mockWishes);
   const [selectedWishId, setSelectedWishId] = useState<string | null>(null);
   const [moderationStatus, setModerationStatus] = useState<WishStatus>('moderation');
   const [rejectionReason, setRejectionReason] = useState<string>('');
+  const [loginFrom, setLoginFrom] = useState<Screen | null>(null);
 
+  // Используем реальную авторизацию
+  const { user, login, register, logout, loading } = useAuth();
+  const currentUser = user ? {
+    ...user,
+    wishesCreated: user.wishesCreated ?? 0,
+    wishesFulfilled: user.wishesFulfilled ?? 0,
+    role: user.role as UserRole ?? 'загадывающий'
+  } : null;
   const isLoggedIn = currentUser !== null;
 
-  // Navigation handlers
-  const handleNavigate = (screen: Screen) => {
-    setCurrentScreen(screen);
-  };
+  useEffect(() => {
+    if (user && currentScreen === 'login') {
+      if (loginFrom) {
+        setCurrentScreen(loginFrom);
+        setLoginFrom(null);
+      } else {
+        setCurrentScreen('main');
+      }
+    }
+  }, [user, currentScreen, loginFrom]);
+
+
+  // Показываем лоадер при загрузке состояния авторизации
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <div className="text-2xl text-gray-600">Загрузка...</div>
+      </div>
+    );
+  }
+
 
   // Auth handlers
-  const handleLogin = (email: string, password: string) => {
-    // Mock login - in real app would verify credentials
-    const user = mockUsers.find((u) => u.email === email);
-    if (user) {
-      setCurrentUser(user);
-      setCurrentScreen('main');
-    } else {
-      alert('Пользователь не найден');
+  const handleLogin = async (email: string, password: string) => {
+    try {
+      await login(email, password);
+      // Навигация будет через useEffect при изменении user
+    } catch (error) {
+      alert('Неверный email или пароль');
+      throw error;
     }
   };
 
-  const handleRegister = (
-    name: string,
-    email: string,
-    phone: string,
-    password: string,
-    role: UserRole
-  ) => {
-    // Mock registration - in real app would create user
-    const newUser: User = {
-      id: String(Date.now()),
-      name,
-      email,
-      role,
-      wishesCreated: 0,
-      wishesFulfilled: 0,
-    };
-    setCurrentUser(newUser);
-    setCurrentScreen('main');
+  const handleRegister = async (...args: Parameters<typeof register>) => {
+    try {
+      await register(...args);
+      setCurrentScreen('main');
+    } catch (error) {
+      alert('Ошибка регистрации: ' + (error instanceof Error ? error.message : 'Неизвестная ошибка'));
+    }
   };
 
   const handleLogout = () => {
-    setCurrentUser(null);
+    logout();
     setCurrentScreen('main');
   };
 
@@ -93,7 +108,7 @@ export default function App() {
 
     const newWish: Wish = {
       id: String(Date.now()),
-      userId: currentUser.id,
+      userId: String(currentUser.id),
       userName: currentUser.name,
       videoUrl: 'https://images.unsplash.com/photo-1714949308848-d117347154d7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxzbWlsaW5nJTIwY2hpbGQlMjBoYXBweXxlbnwxfHx8fDE3NjgyMjgxNDl8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
       title: wishData.title,
@@ -117,7 +132,6 @@ export default function App() {
   };
 
   const handleCommitToWish = (wishId: string) => {
-    // In real app, would update backend
     console.log('Committed to wish:', wishId);
   };
 
@@ -157,14 +171,16 @@ export default function App() {
         <MainScreen
           onNavigate={(screen) => {
             if (screen === 'login') {
+              setLoginFrom('main');
               setCurrentScreen('login');
             } else if (screen === 'zagadat' || screen === 'ispolnit') {
               if (!isLoggedIn) {
+                setLoginFrom(screen); // ← правильно запоминаем цель
                 setCurrentScreen('login');
               } else {
                 setCurrentScreen(screen);
               }
-            } else if (screen === 'fulfilled-gallery' || screen === 'trust-and-safety') {
+            } else {
               setCurrentScreen(screen);
             }
           }}
@@ -174,7 +190,14 @@ export default function App() {
 
       {currentScreen === 'login' && (
         <LoginScreen
-          onBack={() => setCurrentScreen('main')}
+          onBack={() => {
+            if (loginFrom && loginFrom !== 'login') {
+              setCurrentScreen(loginFrom);
+              setLoginFrom(null);
+            } else {
+              setCurrentScreen('main');
+            }
+          }}
           onLogin={handleLogin}
           onSwitchToRegister={() => setCurrentScreen('register')}
         />
